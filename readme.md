@@ -13,7 +13,11 @@ The repository is structured as follows:
 └── assets
     ├── img
     │   ├── icons8-math-100.png
-    │   ├── icons8-physics-100.png
-    │   └── sources.txt
+    │   └── icons8-physics-100.png
     └── style.css
 ```
+
+## File Sources
+
+- [Math icon](https://icons8.com/icon/EBoS6Z0EjXNz/math)
+- [Physics icon](https://icons8.com/icon/Kb7QaaRNPRkW/physics)
