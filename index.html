@@ -1,0 +1,142 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>After School Hub</title>
+        <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+        <link rel=stylesheet href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+        <link rel="stylesheet" href="assets/style.css">
+        <link rel="icon" href="data:,">
+    </head>
+    <body>
+        <div id="app">
+            <header>
+                <h1 v-text="sitename"></h1>
+                <button v-on:click="showCheckout">{{ cartItemCount }}<span class="fas fa-cart-plus"></span>Checkout</button>
+            </header>
+            <main>
+                <div v-if="showProduct" class="product-grid">
+                    <div v-for="product in sortedProducts" :key="product.id" class="product-card">
+                        <figure>
+                            <img v-bind:src="product.image" v-bind:alt="product.title">
+                        </figure>
+                        <h2 v-text="product.title"></h2>
+                        <p v-html="product.description"></p>
+                        <p>Location: {{ product.location }}</p>
+                        <p>Price: £{{ product.price }}</p>
+                        <p>Items remaining: {{ product.availableInventory - cartCount(product.id) }}</p>
+                        <button v-on:click="addToCart(product)" v-if="canAddToCart(product)">Add to cart</button>
+                        <button v-else disabled>Out of stock</button>
+                    </div>
+                </div>
+                <div v-else class="checkout-card">
+                    <h2>Checkout</h2>
+                    <p>Items in cart: {{ cartItemCount }}</p>
+                </div>
+            </main>
+        </div>
+        <script type="text/javascript">
+            let webstore = new Vue({
+                el: '#app',
+                data: {
+                    showProduct: true,
+                    sitename: 'After School Hub',
+                    products: [
+                        {
+                            id: 1001,
+                            title: 'Basic Math',
+                            description: 'A basic math course for beginners. Learn the fundamentals of arithmetic, algebra, and geometry.',
+                            location: 'Liverpool, UK',
+                            price: 20,
+                            image: "assets/img/icons8-math-100.png",
+                            availableInventory: 50
+                        },
+                        {
+                            id: 1002,
+                            title: 'Intermediate Math',
+                            description: 'An intermediate math course for those who want to build on their basic math skills. Topics include advanced algebra, trigonometry, and calculus.',
+                            location: 'Manchester, UK',
+                            price: 40,
+                            image: "assets/img/icons8-math-100.png",
+                            availableInventory: 50
+                        },
+                        {
+                            id: 1003,
+                            title: 'Advanced Math',
+                            description: 'An advanced math course for those who want to take their math skills to the next level. Topics include advanced calculus, statistics, and probability.',
+                            location: 'London, UK',
+                            price: 60,
+                            image: "assets/img/icons8-math-100.png",
+                            availableInventory: 50
+                        },
+                        {
+                            id: 1004,
+                            title: 'Physics',
+                            description: 'A physics course for those who want to learn about the laws of nature. Topics include mechanics, electricity, and magnetism.',
+                            location: 'Birmingham, UK',
+                            price: 25,
+                            image: "assets/img/icons8-physics-100.png",
+                            availableInventory: 50
+                        },
+                        {
+                            id: 1005,
+                            title: 'Intermediate Physics',
+                            description: 'An intermediate physics course for those who want to build on their basic physics skills. Topics include thermodynamics, optics, and quantum mechanics.',
+                            location: 'Leeds, UK',
+                            price: 45,
+                            image: "assets/img/icons8-physics-100.png",
+                            availableInventory: 50
+                        },
+                        {
+                            id: 1006,
+                            title: 'Advanced Physics',
+                            description: 'An advanced physics course for those who want to take their physics skills to the next level. Topics include relativity, particle physics, and astrophysics.',
+                            location: 'Glasgow, UK',
+                            price: 65,
+                            image: "assets/img/icons8-physics-100.png",
+                            availableInventory: 50
+                        }
+                    ],
+                    cart: []
+                },
+                methods: {
+                    addToCart: function(product) {
+                        this.cart.push(product.id);
+                    },
+                    showCheckout: function() {
+                        this.showProduct = !this.showProduct;
+                    },
+                    canAddToCart: function(product) {
+                        return product.availableInventory > this.cartCount(product.id);
+                    },
+                    cartCount: function(id) {
+                        let count = 0;
+                        for (let i = 0; i < this.cart.length; i++) {
+                            if (this.cart[i] === id) {
+                                count++;
+                            }
+                        }
+                        return count;
+                    }
+                },
+                computed: {
+                    cartItemCount: function() {
+                        return this.cart.length || '';
+                    },
+                    sortedProducts: function() {
+                        const levelOrder = {
+                            'Basic Math': 1,
+                            'Intermediate Math': 2,
+                            'Advanced Math': 3
+                        };
+                        return [...this.products].sort((a, b) => {
+                            const orderA = levelOrder[a.title] !== undefined ? levelOrder[a.title] : a.price;
+                            const orderB = levelOrder[b.title] !== undefined ? levelOrder[b.title] : b.price;
+                            return orderA - orderB;
+                        });
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>
