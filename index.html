@@ -43,6 +43,9 @@
                         <h2 v-text="product.title"></h2>
                         <!-- The description may contain HTML markup; only use trusted product data here -->
                         <p class="description" v-html="product.description"></p>
+                        <p class="subject">Subject: {{ product.subject }}</p>
+                        <p class="level">Level: {{ product.level }}</p>
+                        <p class="topics">Topics: {{ product.topics.join(', ') }}</p>
                         <p class="location"><i class="fas fa-map-marker-alt"></i> Location: {{ product.location }}</p>
                         <p class="price">Price: £{{ product.price }}</p>
                         <!-- Subtract the quantity already in the cart from the lesson inventory -->
