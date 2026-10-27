@@ -1,0 +1,12 @@
+{
+  "name": "cst3144-cw1",
+  "version": "1.0.0",
+  "description": "An after-school online learning platform built with HTML, CSS, JavaScript and Vue.js. Browse educational courses, view course details, track availability and manage items through a shopping cart.",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
