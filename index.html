@@ -34,31 +34,145 @@
 
             <main>
                 <!-- Main Page -->
-                <!-- Sort the catalogue before rendering one card for each lesson -->
-                <div v-if="currentView === 'main'" class="product-grid">
-                    <div v-for="product in sortedProducts" :key="product.id" class="product-card">
-                        <figure>
-                            <img v-bind:src="product.image" v-bind:alt="product.title">
-                        </figure>
-                        <h2 v-text="product.title"></h2>
-                        <!-- The description may contain HTML markup; only use trusted product data here -->
-                        <p class="description" v-html="product.description"></p>
-                        <p class="subject">Subject: {{ product.subject }}</p>
-                        <p class="level">Level: {{ product.level }}</p>
-                        <p class="topics">Topics: {{ product.topics.join(', ') }}</p>
-                        <p class="location"><i class="fas fa-map-marker-alt"></i> Location: {{ product.location }}</p>
-                        <p class="price">Price: £{{ product.price }}</p>
-                        <!-- Subtract the quantity already in the cart from the lesson inventory -->
-                        <p class="inventory">Spaces remaining: {{ product.availableInventory - cartCount(product.id) }}</p>
-                        <button v-on:click="addToCart(product)" :disabled="!canAddToCart(product)">Add to cart</button>
-                        <span v-if="product.availableInventory === cartCount(product.id)" class="stock-status out">All Out</span>
-                        <span v-else-if="product.availableInventory - cartCount(product.id) < 5" class="stock-status low">Only {{ product.availableInventory - cartCount(product.id) }} left</span>
-                        <!-- Render filled stars for the rating and outline stars up to a total of five -->
-                        <div class="rating">
-                            <span v-for="n in product.rating" :key="'star-' + n"><i class="fas fa-star"></i></span>
-                            <span v-for="n in (5 - product.rating)" :key="'empty-star-' + n"><i class="far fa-star"></i></span>
+                <div v-if="currentView === 'main'" class="catalogue-layout">
+                    <!-- Lessons Main Content (Left) -->
+                    <div class="catalogue-content">
+                        <!-- Top status bar with results count and filter reset -->
+                        <div class="catalogue-status-bar">
+                            <span class="results-count">
+                                Showing <strong>{{ sortedProducts.length }}</strong> lesson{{ sortedProducts.length === 1 ? '' : 's' }}
+                            </span>
+                            <button v-if="isFiltered" v-on:click="resetFilters" class="clear-filters-btn">
+                                <i class="fas fa-times-circle"></i> Clear Filters
+                            </button>
+                        </div>
+
+                        <!-- Product Grid -->
+                        <div v-if="sortedProducts.length > 0" class="product-grid">
+                            <div v-for="product in sortedProducts" :key="product.id" class="product-card">
+                                <figure>
+                                    <img v-bind:src="product.image" v-bind:alt="product.title">
+                                </figure>
+                                <h2 v-text="product.title"></h2>
+                                <!-- The description may contain HTML markup; only use trusted product data here -->
+                                <p class="description" v-html="product.description"></p>
+                                <p class="subject">Subject: {{ product.subject }}</p>
+                                <p class="instructor">Instructor: {{ product.instructor || product.Instructor }}</p>
+                                <p class="level">Level: {{ product.level }}</p>
+                                <p class="topics">Topics: {{ product.topics.join(', ') }}</p>
+                                <p class="location"><i class="fas fa-map-marker-alt"></i> Location: {{ product.location }}</p>
+                                <p class="price">Price: £{{ product.price }}</p>
+                                <!-- Subtract the quantity already in the cart from the lesson inventory -->
+                                <p class="inventory">Spaces remaining: {{ product.availableInventory - cartCount(product.id) }}</p>
+                                <button v-on:click="addToCart(product)" :disabled="!canAddToCart(product)">Add to cart</button>
+                                <span v-if="product.availableInventory === cartCount(product.id)" class="stock-status out">All Out</span>
+                                <span v-else-if="product.availableInventory - cartCount(product.id) < 5" class="stock-status low">Only {{ product.availableInventory - cartCount(product.id) }} left</span>
+                                <!-- Render filled stars for the rating and outline stars up to a total of five -->
+                                <div class="rating">
+                                    <span v-for="n in product.rating" :key="'star-' + n"><i class="fas fa-star"></i></span>
+                                    <span v-for="n in (5 - product.rating)" :key="'empty-star-' + n"><i class="far fa-star"></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- No Results Message when filters match nothing -->
+                        <div v-else class="no-results-card">
+                            <i class="fas fa-filter empty-icon"></i>
+                            <h3>No Lessons Found</h3>
+                            <p>No lessons match your selected filter criteria. Try choosing a different filter or reset.</p>
+                            <button class="btn-primary btn-sm" v-on:click="resetFilters">
+                                <i class="fas fa-redo"></i> Reset All Filters
+                            </button>
                         </div>
                     </div>
+
+                    <!-- Sticky Sort & Filter Sidebar (Right) -->
+                    <aside class="sidebar-sticky">
+                        <div class="sidebar-card">
+                            <div class="sidebar-card-header">
+                                <h3><i class="fas fa-sliders-h"></i> Filter &amp; Sort</h3>
+                                <button v-if="isFiltered" class="reset-link-btn" v-on:click="resetFilters" title="Reset all filters">
+                                    <i class="fas fa-undo"></i> Reset
+                                </button>
+                            </div>
+
+                            <!-- Filter Section -->
+                            <div class="sidebar-group">
+                                <span class="sidebar-group-label"><i class="fas fa-filter"></i> Filters</span>
+
+                                <div class="filter-field">
+                                    <label for="filter-subject">Subject</label>
+                                    <select id="filter-subject" v-model="selectedSubject" class="filter-select">
+                                        <option value="all">All Subjects</option>
+                                        <option v-for="subj in uniqueSubjects" :key="subj" :value="subj">{{ subj }}</option>
+                                    </select>
+                                </div>
+
+                                <div class="filter-field">
+                                    <label for="filter-location">Location</label>
+                                    <select id="filter-location" v-model="selectedLocation" class="filter-select">
+                                        <option value="all">All Locations</option>
+                                        <option v-for="loc in uniqueLocations" :key="loc" :value="loc">{{ loc }}</option>
+                                    </select>
+                                </div>
+
+                                <div class="filter-field">
+                                    <label for="filter-instructor">Instructor</label>
+                                    <select id="filter-instructor" v-model="selectedInstructor" class="filter-select">
+                                        <option value="all">All Instructors</option>
+                                        <option v-for="inst in uniqueInstructors" :key="inst" :value="inst">{{ inst }}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <hr class="sidebar-divider">
+
+                            <!-- Sort Section -->
+                            <div class="sidebar-group">
+                                <span class="sidebar-group-label"><i class="fas fa-sort-amount-down"></i> Sort</span>
+
+                                <!-- Order -->
+                                <div class="order-toggle-grid">
+                                    <label class="order-pill" :class="{ active: sortOrder === 'asc' }">
+                                        <input type="radio" value="asc" v-model="sortOrder">
+                                        <i class="fas fa-arrow-up"></i> Asc (A-Z)
+                                    </label>
+                                    <label class="order-pill" :class="{ active: sortOrder === 'desc' }">
+                                        <input type="radio" value="desc" v-model="sortOrder">
+                                        <i class="fas fa-arrow-down"></i> Desc (Z-A)
+                                    </label>
+                                </div>
+
+                                <!-- Attribute Grid -->
+                                <div class="sort-radio-grid">
+                                    <label class="sort-radio-item" :class="{ active: sortAttribute === 'title' }">
+                                        <input type="radio" value="title" v-model="sortAttribute">
+                                        <span>Title</span>
+                                    </label>
+                                    <label class="sort-radio-item" :class="{ active: sortAttribute === 'price' }">
+                                        <input type="radio" value="price" v-model="sortAttribute">
+                                        <span>Price</span>
+                                    </label>
+                                    <label class="sort-radio-item" :class="{ active: sortAttribute === 'spaces' }">
+                                        <input type="radio" value="spaces" v-model="sortAttribute">
+                                        <span>Spaces</span>
+                                    </label>
+                                    <label class="sort-radio-item" :class="{ active: sortAttribute === 'subject' }">
+                                        <input type="radio" value="subject" v-model="sortAttribute">
+                                        <span>Subject</span>
+                                    </label>
+                                    <label class="sort-radio-item" :class="{ active: sortAttribute === 'location' }">
+                                        <input type="radio" value="location" v-model="sortAttribute">
+                                        <span>Location</span>
+                                    </label>
+                                    <label class="sort-radio-item" :class="{ active: sortAttribute === 'instructor' }">
+                                        <input type="radio" value="instructor" v-model="sortAttribute">
+                                        <span>Instructor</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
                 </div>
 
                 <!-- Cart Page -->
@@ -251,206 +365,7 @@
             </main>
         </div>
 
-        <script type="text/javascript">
-            // Create the Vue application and connect it to the #app element above.
-            let webstore = new Vue({
-                el: '#app',
-                data: {
-                    // Reactive state shared by the lesson list, cart, and checkout views.
-                    currentView: 'main', // Active screen: lesson catalogue, cart, or checkout.
-                    sitename: 'After School Hub',
-                    // Customer and delivery information bound to the checkout form.
-                    // firstName and lastName are derived from name by the watcher below.
-                    order: {
-                        name: '',
-                        phone: '',
-                        firstName: '',
-                        lastName: '',
-                        address: '',
-                        city: '',
-                        country: '',
-                        zip: '',
-                        method: 'Home',
-                        sendGift: 'Send as gift',
-                        dontsendGift: 'Do not send as gift',
-                        gift: 'Do not send as gift'
-                    },
-                    // Country codes used as select values; their labels are shown to the customer.
-                    country: {
-                        ENG: 'England',
-                        SCT: 'Scotland',
-                        WLS: 'Wales',
-                        NIR: 'Northern Ireland'
-                    },
-                    products: products, // Product catalogue loaded from assets/products.js.
-                    cart: [] // Stores one product ID per space; repeated IDs represent quantities.
-                },
-                // Keep firstName and lastName in sync when the full name changes.
-                watch: {
-                    'order.name': function(val) {
-                        if (!val) {
-                            this.order.firstName = '';
-                            this.order.lastName = '';
-                            return;
-                        }
-                        // Treat the first word as the first name and the remaining words as the last name.
-                        let parts = val.trim().split(/\s+/);
-                        this.order.firstName = parts[0] || '';
-                        this.order.lastName = parts.slice(1).join(' ') || '';
-                    }
-                },
-                // Event handlers invoked by buttons in the HTML template.
-                methods: {
-                    // Open the cart from the catalogue when it is non-empty; otherwise return to the catalogue.
-                    toggleCart: function() {
-                        if (this.currentView === 'main') {
-                            if (this.cart.length > 0) {
-                                this.currentView = 'cart';
-                            }
-                        } else {
-                            this.currentView = 'main';
-                        }
-                    },
-                    // Retained helper that delegates to the cart toggle behaviour.
-                    showCheckout: function() {
-                        this.toggleCart();
-                    },
-                    // Add one instance of a product only when inventory permits it.
-                    addToCart: function(product) {
-                        if (this.canAddToCart(product)) {
-                            this.cart.push(product.id);
-                        }
-                    },
-                    // Remove a single occurrence of this product ID from the cart.
-                    removeFromCart: function(product) {
-                        let index = this.cart.indexOf(product.id);
-                        if (index !== -1) {
-                            this.cart.splice(index, 1);
-                        }
-                        if (this.cart.length === 0) {
-                            this.currentView = 'cart';
-                        }
-                    },
-                    // Remove every occurrence of this product ID, regardless of its quantity.
-                    removeAllFromCart: function(product) {
-                        this.cart = this.cart.filter(function(id) {
-                            return id !== product.id;
-                        });
-                        if (this.cart.length === 0) {
-                            this.currentView = 'cart';
-                        }
-                    },
-                    // Prevent the cart quantity from exceeding the product's available inventory.
-                    canAddToCart: function(product) {
-                        return product.availableInventory > this.cartCount(product.id);
-                    },
-                    // Count how many spaces for a particular product are currently in the cart.
-                    cartCount: function(id) {
-                        let count = 0;
-                        for (let i = 0; i < this.cart.length; i++) {
-                            if (this.cart[i] === id) {
-                                count++;
-                            }
-                        }
-                        return count;
-                    },
-                    // Validate the order, show a confirmation, and reset the local demo state.
-                    submitForm: function() {
-                        if (this.isOrderValid) {
-                            alert('Order submitted successfully! Thank you for your purchase.');
-                            this.cart = [];
-                            this.order.name = '';
-                            this.order.phone = '';
-                            this.order.firstName = '';
-                            this.order.lastName = '';
-                            this.order.address = '';
-                            this.order.city = '';
-                            this.order.country = '';
-                            this.order.zip = '';
-                            this.order.gift = 'Do not send as gift';
-                            this.order.method = 'Home';
-                            this.currentView = 'main';
-                        }
-                    }
-                },
-                // Derived values are recalculated by Vue when their reactive dependencies change.
-                computed: {
-                    // Compatibility helper: true selects the catalogue, false selects the cart.
-                    showProduct: {
-                        get: function() {
-                            return this.currentView === 'main';
-                        },
-                        set: function(val) {
-                            this.currentView = val ? 'main' : 'cart';
-                        }
-                    },
-                    // Count spaces in the cart, including repeated product IDs.
-                    cartItemCount: function() {
-                        return this.cart.length;
-                    },
-                    // Build one display row per product, with its quantity and line subtotal.
-                    cartItems: function() {
-                        let items = [];
-                        // Track product IDs already converted into a display row.
-                        let seen = {};
-                        for (let i = 0; i < this.cart.length; i++) {
-                            let id = this.cart[i];
-                            if (!seen[id]) {
-                                seen[id] = true;
-                                let product = this.products.find(function(p) {
-                                    return p.id === id;
-                                });
-                                if (product) {
-                                    let qty = this.cartCount(id);
-                                    items.push({
-                                        product: product,
-                                        quantity: qty,
-                                        subtotal: product.price * qty
-                                    });
-                                }
-                            }
-                        }
-                        return items;
-                    },
-                    // Add the price once for every cart entry, so quantities are included in the total.
-                    cartTotalPrice: function() {
-                        let total = 0;
-                        for (let i = 0; i < this.cart.length; i++) {
-                            let id = this.cart[i];
-                            let product = this.products.find(function(p) {
-                                return p.id === id;
-                            });
-                            if (product) {
-                                total += product.price;
-                            }
-                        }
-                        return total;
-                    },
-                    // Accept alphabetic English letters and spaces; punctuation and digits are rejected.
-                    isNameValid: function() {
-                        return /^[A-Za-z\s]+$/.test((this.order.name || '').trim());
-                    },
-                    // Accept digits only; this is a format check, not a check that the number exists.
-                    isPhoneValid: function() {
-                        return /^[0-9]+$/.test((this.order.phone || '').trim());
-                    },
-                    // An order can be placed only with a valid name, valid phone number, and at least one cart entry.
-                    isOrderValid: function() {
-                        return this.isNameValid && this.isPhoneValid && this.cart.length > 0;
-                    },
-                    // Sort a copy so the original products array keeps its existing order.
-                    sortedProducts: function() {
-                        let productsArray = this.products.slice(0);
-                        // Return a negative value when a is cheaper, a positive value when b is cheaper, or zero for equal prices.
-                        function compare(a, b) {
-                            if (a.price < b.price) return -1;
-                            if (a.price > b.price) return 1;
-                            return 0;
-                        }
-                        return productsArray.sort(compare);
-                    }
-                }
-            });
-        </script>
+        <!-- Load the Vue application logic -->
+        <script src="assets/app.js"></script>
     </body>
 </html>
