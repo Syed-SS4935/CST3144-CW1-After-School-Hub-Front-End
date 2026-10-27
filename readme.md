@@ -6,16 +6,20 @@ An interactive after-school educational course booking web application built wit
 
 ## Table of Contents
 
-- [Features](#features)
-  - [1. Lesson Catalogue](#1-lesson-catalogue)
-  - [2. Multi-Attribute Sorting](#2-multi-attribute-sorting)
-  - [3. Dynamic Filtering](#3-dynamic-filtering)
-  - [4. Shopping Cart Management](#4-shopping-cart-management)
-  - [5. Checkout & Validation](#5-checkout--validation)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Attribution & Credits](#attribution--credits)
+- [After School Hub](#after-school-hub)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+    - [1. Lesson Catalogue](#1-lesson-catalogue)
+    - [2. Multi-Attribute Sorting](#2-multi-attribute-sorting)
+    - [3. Dynamic Filtering](#3-dynamic-filtering)
+    - [4. Shopping Cart Management](#4-shopping-cart-management)
+    - [5. Checkout \& Validation](#5-checkout--validation)
+  - [Technology Stack](#technology-stack)
+  - [Project Structure](#project-structure)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Running the Application](#running-the-application)
+  - [Attribution \& Credits](#attribution--credits)
 
 ---
 
@@ -92,7 +96,7 @@ An interactive after-school educational course booking web application built wit
 ## Project Structure
 
 ```text
-CST3144-CW1/
+CST3144-CW1-After-School-Hub-Front-End/
 ├── assets/
 │   ├── app.js             # Vue.js application instance, data state, methods & computed properties
 │   ├── products.js        # Lesson data array (topics, instructor, price, inventory, location, etc.)
